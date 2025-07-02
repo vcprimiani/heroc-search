@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fetch = require('node-fetch');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,10 +20,6 @@ app.use(express.static('public'));
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/api/heroes', (req, res) => {
-  res.json([]);
 });
 
 app.get('/api/search', async (req, res) => {
@@ -49,10 +46,6 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-app.get('/api/classes', (req, res) => {
-  res.json([]);
-});
-
 app.listen(PORT, () => {
-  console.log(`Heroic Search Tool running on http://localhost:${PORT}`);
+  console.log(`Breach Search Tool running on http://localhost:${PORT}`);
 });

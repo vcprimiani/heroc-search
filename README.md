@@ -1,4 +1,4 @@
-# Heroic Search Tool
+# Breach Search Tool
 
 A modern, responsive web application for searching and discovering legendary heroes and their extraordinary abilities.
 
@@ -90,8 +90,8 @@ npm run dev
 ## API Endpoints (Full-Stack Version)
 
 - `GET /` - Serves the main application
+- `GET /api/search?type=TYPE&account=VALUE` - Proxy to the HEROIC Breach Search API
 - `GET /api/heroes` - Returns all heroes
-- `GET /api/search?q=query&class=class&minPower=power` - Search heroes with filters
 - `GET /api/classes` - Returns all available hero classes
 
 ## Usage
@@ -164,3 +164,14 @@ This is an MVP (Minimum Viable Product) designed to demonstrate the core functio
 ## License
 
 MIT License - Feel free to use and modify as needed.
+
+## Environment Variables
+
+Create a `.env` file (or export in your shell) with:
+
+```bash
+# Required for both local dev and Netlify
+HEROIC_API_KEY=your_api_key_here
+```
+
+For Netlify, add `HEROIC_API_KEY` in **Site settings → Build & deploy → Environment variables**.
