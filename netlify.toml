@@ -12,7 +12,7 @@
 # Redirect rules for SPA behavior
 [[redirects]]
   from = "/*"
-  to = "/static-index.html"
+  to = "/index.html"
   status = 200
 
 # Headers for better performance
@@ -35,3 +35,8 @@
 
 [functions]
   directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/search"
+  to = "/.netlify/functions/search"
+  status = 200
