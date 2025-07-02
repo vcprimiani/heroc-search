@@ -127,13 +127,13 @@
             color: #333;
         }
 
-        .hero-grid {
+        .breach-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
 
-        .hero-card {
+        .breach-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             padding: 20px;
@@ -141,28 +141,22 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .hero-card:hover {
+        .breach-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
 
-        .hero-header {
+        .breach-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
 
-        .hero-name {
+        .breach-site {
             font-size: 1.3rem;
             font-weight: 700;
             color: #2c3e50;
-        }
-
-        .hero-title {
-            font-size: 1rem;
-            color: #667eea;
-            font-weight: 600;
         }
 
         .power-badge {
@@ -174,7 +168,7 @@
             font-weight: 600;
         }
 
-        .hero-details {
+        .breach-details {
             margin-bottom: 15px;
         }
 
@@ -210,7 +204,7 @@
             font-weight: 500;
         }
 
-        .hero-description {
+        .breach-description {
             color: #6c757d;
             font-style: italic;
             line-height: 1.4;
@@ -236,7 +230,7 @@
                 gap: 15px;
             }
 
-            .hero-grid {
+            .breach-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -323,14 +317,14 @@
             const items = data.data.map(item => {
                 const breached = item.breached_data;
                 const details = item.breach_details;
-                return `<div class="hero-card">
+                return `<div class="breach-card">
                     <div><strong>Breach Site:</strong> ${details.site_name} (${details.site_domain})</div>
                     <div><strong>Date Leaked:</strong> ${details.date_leaked}</div>
                     <div><strong>Description:</strong> ${details.description}</div>
                     <div><strong>Exposed Data:</strong> ${Object.entries(breached).map(([k,v]) => v ? `<span class='ability-tag'><b>${k}:</b> ${v}</span>` : '').join(' ')}</div>
                 </div>`;
             }).join('');
-            resultsArea.innerHTML = `<div class="hero-grid">${items}</div>`;
+            resultsArea.innerHTML = `<div class="breach-grid">${items}</div>`;
             resultsTitle.textContent = `Results (${data.data.length})`;
         }
 
