@@ -1,0 +1,519 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "HEROIC API Reference",
+    "version": "7.3.0",
+    "description": "## Introduction\nHEROIC offers a powerful suite of enterprise-grade APIs designed to detect and investigate exposed data across billions of breach records. With tens of billions of compromised records indexed, the HEROIC API allows you to search and retrieve breach data across multiple identity types and sources.\n\n## Access requirements\nTo use the HEROIC API, you must have an active HEROIC Enterprise Account. [Click here to sign up.](https://app.heroic.com/enterprise/register)\n\n### Base URL\nThe Base URL for our APIs is https://api.heroic.com/v7\n\n### Obtaining the API key\nTo obtain a key:\n- Log into your HEROIC Enterprise account.\n- Go to API Key Management.\n- Create or manage your API keys.\n\n### Authentication\nAll requests must include an API key in the header:\nx-api-key: YOUR_API_KEY\n\n# Error Handling\n| Code | Error category | Description | Resolution |\n|------|---------------|-------------|------------|\n| 403  | Authentication Failed | Invalid API credentials. | Ensure a valid API key is specified. |\n| 404  | Path not found | The API path does not exist. | Check the API route. |\n| 405  | Invalid input | Invalid input provided. | Check your input. |\n| 422  | Validation Error | Validation failed. | Read the error message and correct your data. |\n| 500  | Internal server error | Server error. | [Contact](https://support.heroic.com) HEROIC support. |\n\n# Need help?\nContact support@heroic.com for assistance.\n\n# PII Masking\nHEROIC is committed to protecting sensitive personal information (PII) in all API responses. To ensure privacy and compliance, all PII fields such as credit card numbers, SSNs, and passwords are masked or redacted in the data returned by our APIs.\n\n- **Credit card numbers**: Randomly masked to show up to 6 digits (e.g., `543210XXXXXX1234`).\n- **SSNs**: Only last 2 digits are visible (e.g., `123-456-78**`).\n- **Passwords**: Only last 2 characters are visible (e.g., `admin@12**`).\n\nThis masking ensures that sensitive data cannot be reconstructed or misused, while still allowing for effective breach investigation and analysis. If you require access to unmasked data for legitimate security or compliance reasons, please contact HEROIC support for more information on our data access policies.\n",
+    "contact": {
+      "name": "HEROIC Cybersecurity",
+      "url": "https://HEROIC.com"
+    },
+    "termsOfService": "https://heroic.com/terms-conditions/",
+    "x-logo": {
+      "url": "https://heroic.com/wp-content/uploads/HEROIC-logo.png",
+      "altText": "HEROIC Logo"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.heroic.com/v7",
+      "description": "Endpoint for the APIs"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Breach catalog",
+      "description": "The breach catalog includes general information about what was exposed, when the breach occurred, and what type of data was involved. It's useful for displaying or investigating breach events at a high level."
+    },
+    {
+      "name": "Breach search",
+      "description": "APIs for data breach search for accounts."
+    },
+    {
+      "name": "Credit card search",
+      "description": "HEROIC's Credit Card Search API provides access to both legacy (free) and active (paid) stolen credit card data found across darknet markets and hacker forums. Free cards typically originate from older leaks and are useful for identifying previously compromised information, while paid cards are current, often functional, and marketed on underground platforms. HEROIC collects associated metadata such as BINs, expiration dates, issuing countries, prices, and seller reputations. Users can perform single BIN lookups, submit bulk queries, configure automated monitoring, and download results in formats including CSV, Excel, or JSON.\n\n**Search Capabilities and Limitations**\nThe API enables structured searches, including masked or SHA-256-hashed card numbers, owner names, CVV codes, and expiration dates. Users can apply advanced filters and syntax to refine results and maintain privacy. Monitoring options are available for ongoing updates. While powerful, the system is affected by common challenges—such as disappearing data, duplicate listings, low-quality or fake records, and the migration of card sales to newer platforms like Telegram and Discord. HEROIC continues to improve its scraping and detection capabilities, with regular updates and expanding coverage to adapt to the evolving threat landscape.\n\n**What types of credit cards are indexed by HEROIC?**\nHEROIC tracks two primary categories of compromised credit card data uncovered across the deep and dark web:\n- **Free Cards** – These are stolen credit card records that have been made publicly available without cost on underground forums and leak sites. While HEROIC's systems have cataloged millions of such entries, the majority are from older breaches and are typically no longer valid for transactions. You can explore this data through the database search feature in the HEROIC Control Center.\n- **Paid Cards** – These are active, for-sale credit cards commonly listed on darknet marketplaces. Sold much like regular merchandise, these records are often fresh and functional, requiring a payment to access. HEROIC continuously scans and logs these listings to provide real-time intelligence on emerging threats.\n"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "ApiKeyHeader": {
+        "name": "x-api-key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "API key for authentication."
+      },
+      "BreachTypeParam": {
+        "name": "type",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "email",
+            "email_domain",
+            "phone_number",
+            "username",
+            "ip_address",
+            "social_security_number",
+            "password",
+            "password_hash",
+            "bitcoin_address"
+          ]
+        },
+        "description": "Account type filter."
+      },
+      "BreachAccountParam": {
+        "name": "account",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Value for the selected account type."
+      },
+      "PagingTokenParam": {
+        "name": "paging_token",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Token for pagination (from previous response)."
+      },
+      "NumberOfRecordsParam": {
+        "name": "number_of_records",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Limit the number of records returned."
+      },
+      "BreachUuidParam": {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "UUID of the data breach."
+      }
+    },
+    "schemas": {
+      "BreachDetails": {
+        "type": "object",
+        "description": "Information about a data breach.",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "example": "f5d77b03-44b4-11eb-9442-1d5c76d5a106"
+          },
+          "site_name": {
+            "type": "string",
+            "example": "Ledger"
+          },
+          "site_domain": {
+            "type": "string",
+            "example": "ledger.com"
+          },
+          "site_logo": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://breached-sites-logos.s3.us-west-2.amazonaws.com/ledger_logo.png"
+          },
+          "date_leaked": {
+            "type": "string",
+            "format": "date",
+            "example": "25-Jun-2020"
+          },
+          "site_categories": {
+            "type": "string",
+            "example": "Crypto"
+          },
+          "site_country": {
+            "type": "string",
+            "example": "United States"
+          },
+          "site_language": {
+            "type": "string",
+            "example": "English"
+          },
+          "password_types": {
+            "type": "string",
+            "example": "None"
+          },
+          "leaked_data_types": {
+            "type": "string",
+            "example": "Email Address, Phone"
+          },
+          "heroic_article_url": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "description": {
+            "type": "string",
+            "example": "The hacker responsible for Ledger's security breach in July dumped a large amount of data exposing the personal information of over 270,000 customers, including phone numbers and physical addresses."
+          },
+          "pwned_count": {
+            "type": "integer",
+            "example": 1075382
+          }
+        }
+      },
+      "BreachedData": {
+        "type": "object",
+        "description": "Data exposed in a breach.",
+        "properties": {
+          "user_name": {
+            "type": "string",
+            "example": "kmatch7"
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "kmatch7@yahoo.com"
+          },
+          "email_domain": {
+            "type": "string",
+            "example": "yahoo.com"
+          },
+          "phone_number": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "ip_address": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "bitcoin_address": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "password": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "password_hash": {
+            "type": "string",
+            "example": "71bb2e8e85702bc6dc8fe49bc2ca2664"
+          },
+          "other_attributes": {
+            "type": "string",
+            "example": "{\"DATE_REG\": \"2012-01-31 03:50:51\"}"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/breaches": {
+      "get": {
+        "tags": [
+          "Breach catalog"
+        ],
+        "summary": "Get all breaches",
+        "description": "Returns an array of all breaches HEROIC has discovered.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BreachDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/breaches/{uuid}": {
+      "get": {
+        "tags": [
+          "Breach catalog"
+        ],
+        "summary": "Get breach details",
+        "description": "Provides information associated with a breach. Requires UUID as a parameter.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BreachUuidParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BreachDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/breach-search": {
+      "get": {
+        "tags": [
+          "Breach search"
+        ],
+        "summary": "Breach search",
+        "description": "Search for breach details by email, IP address, phone number, etc.\n\n## Search Filters\nIn addition to the required `type` and `account` parameters, you can use any of the supported breach type values as additional filter parameters. These filters accept \"yes\" or \"no\" values to refine your search results.\n\n### Example Usage\nTo search for an email address that also has a password exposed:\n```\nGET /breach-search?type=email&account=mohammad@gmail.com&password=yes\n```\n\nThis will return all breach records for `mohammad@gmail.com` where a password was also exposed.\n\n### Supported Filter Types\nYou can use any of these values as filter parameters:\n- `email` - Filter for records with email addresses\n- `email_domain` - Filter for records with email domains\n- `phone_number` - Filter for records with phone numbers\n- `username` - Filter for records with usernames\n- `ip_address` - Filter for records with IP addresses\n- `social_security_number` - Filter for records with SSNs\n- `password` - Filter for records with passwords\n- `password_hash` - Filter for records with password hashes\n- `bitcoin_address` - Filter for records with bitcoin addresses\n\n### Filter Values\n- `yes` - Include only records that have this data type\n- `no` - Exclude records that have this data type\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/BreachTypeParam"
+          },
+          {
+            "$ref": "#/components/parameters/BreachAccountParam"
+          },
+          {
+            "$ref": "#/components/parameters/PagingTokenParam"
+          },
+          {
+            "$ref": "#/components/parameters/NumberOfRecordsParam"
+          },
+          {
+            "name": "[breach_type]",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "yes",
+                "no"
+              ]
+            },
+            "description": "Additional filter parameters. You can use any of the supported breach type values (email, email_domain, phone_number, username, ip_address, social_security_number, password, password_hash, bitcoin_address) as parameter names with \"yes\" or \"no\" values to filter results.\n\nExample: `password=yes` will return only records that also have a password exposed.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records_found": {
+                      "type": "integer",
+                      "example": 12
+                    },
+                    "pagination_token": {
+                      "type": "string",
+                      "example": "0053001032e271c0ddeb11ed8a50195359d257484062633566646662383939636438356362623630343361663638656663353038393939333131346166633061393937306331626132643632623633623065383132f07ffffff5f07ffffff110"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "breached_data": {
+                            "$ref": "#/components/schemas/BreachedData"
+                          },
+                          "breach_details": {
+                            "$ref": "#/components/schemas/BreachDetails"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit-card-search": {
+      "get": {
+        "tags": [
+          "Credit card search"
+        ],
+        "summary": "Credit card search",
+        "description": "This endpoint enables you to search for exposed credit card records discovered in data breaches and leaks. You can use query parameters to filter results by cardholder, issuing bank, or other criteria. The response includes masked card numbers, CVVs, expiration dates, issuing bank details, and breach-related metadata.\n\n**Advanced Search Syntax**\n\n**Available Fields:**\n\n| Field      | Details                                                                 |\n|------------|------------------------------------------------------------------------|\n| createdAt  | Creation date & time.                                                  |\n| number     | Credit card number (default field), masked with X in the middle except first 6 and last 4 digits. |\n| Hash       | SHA-256 of a credit card number                                        |\n| expireDate | Expiration date                                                        |\n| cvv        | Card verification value                                                |\n| owner      | Owner name                                                             |\n| bank       | Issuer bank name                                                       |\n| leakId     | Leak ID                                                                |\n\n  \n **Operators:** AND, OR, NOT  \n \n **Examples:**  \n - Search cards starting with 411111: `411111*`  \n - Search cards starting with 400012 and ending with 7890, containing 16 digits: `400012XXXXXX7890`  \n - Search cards starting with 400012 and ending with 7890, containing any number of digits: `400012*7890`  \n - Search cards with Alice Smith as owner and Chase Bank as bank: `owner:\"Alice Smith\" AND bank:\"Chase Bank\"`  \n - Search cards starting with 411111 and belonging to Bob Lee: `number:411111* AND owner:\"Bob Lee\"`  \n - Search cards that have a CVV 555 and that expire on or after January 1, 2023: `cvv:555 AND expireDate:[2023-01-01 TO *]`\n\n The credit card search API supports both pagination and advanced search capabilities. Sensitive information, such as full card numbers, is never exposed—only masked versions are included in the response.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApiKeyHeader"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 0
+            },
+            "description": "Page number (zero-based)."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 10
+            },
+            "description": "Number of records per page."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "createdAt,desc"
+            },
+            "description": "Sort order (e.g., createdAt,desc)."
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "owner:Johnson AND bank:Citibank"
+            },
+            "description": "Search query (e.g., owner, bank, etc). Supports logical operators (AND, OR)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "number": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "size": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "totalElements": {
+                      "type": "integer",
+                      "example": 352
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "example": 36
+                    },
+                    "numberOfElements": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "first": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "last": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "hasContent": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "70852ff0-fab3-3c49-87c7-9545fefcb02c"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2025-03-13 05:42:36"
+                          },
+                          "bank": {
+                            "type": "string",
+                            "example": "FARMERS STATE BANK"
+                          },
+                          "number": {
+                            "type": "string",
+                            "example": "424744XXXXXX0328"
+                          },
+                          "owner": {
+                            "type": "string",
+                            "example": "Chad Wells"
+                          },
+                          "cvv": {
+                            "type": "string",
+                            "example": "045"
+                          },
+                          "expireDate": {
+                            "type": "string",
+                            "example": "2025-02-01"
+                          },
+                          "cvssScore": {
+                            "type": "integer",
+                            "example": 10
+                          },
+                          "leakId": {
+                            "type": "string",
+                            "example": "0f53e4b1-8c6a-3e38-96ac-c90909faf678"
+                          },
+                          "leakName": {
+                            "type": "string",
+                            "example": "stealer log 11.02.2025"
+                          },
+                          "leakPublishDate": {
+                            "type": "string",
+                            "example": "2025-02-11"
+                          },
+                          "leakDiscoverDate": {
+                            "type": "string",
+                            "example": "2025-02-19"
+                          },
+                          "leakSize": {
+                            "type": "integer",
+                            "example": 59634800800
+                          },
+                          "leakTags": {
+                            "type": "string",
+                            "example": "password,log,credit-card,ip,email,hash,url,account,username"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
