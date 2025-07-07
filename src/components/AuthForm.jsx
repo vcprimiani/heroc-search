@@ -18,9 +18,23 @@ const AuthForm = ({ onLogin, onRegister, loading, error }) => {
         <button className={tab === 'login' ? 'active' : ''} onClick={() => setTab('login')}>Login</button>
         <button className={tab === 'register' ? 'active' : ''} onClick={() => setTab('register')}>Register</button>
       </div>
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+      <form className="auth-form" onSubmit={handleSubmit} autoComplete="on">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          autoComplete="username"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+        />
         <button type="submit" disabled={loading}>{loading ? (tab === 'login' ? 'Logging in...' : 'Registering...') : (tab === 'login' ? 'Login' : 'Register')}</button>
       </form>
       {error && <div className={error.includes('successful') ? 'auth-success' : 'auth-error'}>{error}</div>}
