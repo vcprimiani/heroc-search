@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
+import Header from './components/Header';
+import AuthForm from './components/AuthForm';
+import Dashboard from './components/Dashboard';
 import './App.css';
 
 function App() {
   const [session, setSession] = useState(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -23,8 +25,7 @@ function App() {
     };
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (email, password) => {
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -32,8 +33,7 @@ function App() {
     setLoading(false);
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const handleRegister = async (email, password) => {
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signUp({ email, password });
@@ -53,40 +53,33 @@ function App() {
 
   const handleUpload = async () => {
     if (!file) return;
+    setUploading(true);
     setUploadMessage('');
     const { data, error } = await supabase.storage.from('hash-uploads').upload(`${session.user.id}/${file.name}`, file);
     if (error) setUploadMessage(error.message);
     else setUploadMessage('File uploaded successfully!');
+    setUploading(false);
   };
 
-  if (!session) {
-    return (
-      <div className="app-container">
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required /><br />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required /><br />
-          <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-        </form>
-        <h3>or Register</h3>
-        <form onSubmit={handleRegister}>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required /><br />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required /><br />
-          <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
-        </form>
-        {error && <p style={{ color: error.includes('successful') ? 'green' : 'red' }}>{error}</p>}
-      </div>
-    );
-  }
-
   return (
-    <div className="app-container">
-      <h2>Welcome, {session.user.email}</h2>
-      <button onClick={handleLogout}>Logout</button>
-      <h3>Upload Hash File</h3>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={!file}>Upload</button>
-      {uploadMessage && <p>{uploadMessage}</p>}
+    <div>
+      <Header user={session?.user} onLogout={handleLogout} />
+      {!session ? (
+        <AuthForm
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+          loading={loading}
+          error={error}
+        />
+      ) : (
+        <Dashboard
+          user={session.user}
+          onFileChange={handleFileChange}
+          onUpload={handleUpload}
+          uploadMessage={uploadMessage}
+          loading={uploading}
+        />
+      )}
     </div>
   );
 }

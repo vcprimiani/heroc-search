@@ -1,0 +1,33 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #22314f;
+  color: #fff;
+  padding: 18px 32px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(34,49,79,0.07);
+}
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.user-info button {
+  background: #fff;
+  color: #22314f;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.user-info button:hover {
+  background: #e5e9f2;
+} 
