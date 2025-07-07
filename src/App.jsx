@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
+import './App.css';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -11,7 +12,9 @@ function App() {
   const [uploadMessage, setUploadMessage] = useState('');
 
   useEffect(() => {
-    setSession(supabase.auth.getSession());
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -35,6 +38,7 @@ function App() {
     setError('');
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) setError(error.message);
+    else setError('Registration successful! Please check your email to confirm your account.');
     setLoading(false);
   };
 
@@ -55,29 +59,29 @@ function App() {
     else setUploadMessage('File uploaded successfully!');
   };
 
-  if (!session || !session.data?.session) {
+  if (!session) {
     return (
-      <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
+      <div className="app-container">
         <h2>Login</h2>
         <form onSubmit={handleLogin}>
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required /><br />
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required /><br />
-          <button type="submit" disabled={loading}>Login</button>
+          <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
         </form>
         <h3>or Register</h3>
         <form onSubmit={handleRegister}>
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required /><br />
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required /><br />
-          <button type="submit" disabled={loading}>Register</button>
+          <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
         </form>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: error.includes('successful') ? 'green' : 'red' }}>{error}</p>}
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
-      <h2>Welcome, {session.data.session.user.email}</h2>
+    <div className="app-container">
+      <h2>Welcome, {session.user.email}</h2>
       <button onClick={handleLogout}>Logout</button>
       <h3>Upload Hash File</h3>
       <input type="file" onChange={handleFileChange} />
